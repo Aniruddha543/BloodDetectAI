@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Patient Report • BloodDetectAI</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <style>
+    body {
+      background: radial-gradient(circle at center, #1a0000, #000000);
+      color: #fff;
+      font-family: "Poppins", sans-serif;
+      padding: 30px;
+    }
+    h2 {
+      text-align: center;
+      color: #ff4d4d;
+      margin-bottom: 25px;
+    }
+    table {
+      background-color: #1a0000;
+      color: white;
+      border: 1px solid #ff4d4d;
+    }
+    th {
+      background-color: #660000;
+      color: #fff;
+      text-align: center;
+    }
+    td {
+      text-align: center;
+    }
+    .btn-danger {
+      background-color: #ff3333;
+      border: none;
+      transition: all 0.3s ease-in-out;
+    }
+    .btn-danger:hover {
+      background-color: #ff0000;
+      transform: scale(1.05);
+    }
+    .report-container {
+      max-width: 900px;
+      margin: 0 auto;
+      border: 1px solid #ff4d4d;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
+      background: rgba(0, 0, 0, 0.7);
+    }
+    #doctor {
+      color: #ff9999;
+      font-style: italic;
+      text-align: right;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="report-container">
+    <h2>🩸 Patient Detection Report</h2>
+
+    <div id="patient-details" class="mb-4">
+      <p><strong>Name:</strong> <span id="pname">Loading...</span></p>
+      <p><strong>Phone:</strong> <span id="pphone">Loading...</span></p>
+      <p><strong>Age:</strong> <span id="page">Loading...</span></p>
+      <p><strong>Sex:</strong> <span id="psex">Loading...</span></p>
+      <p><strong>Doctor License No:</strong> <span id="dlicense">Loading...</span></p>
+    </div>
+
+    <table class="table table-bordered table-striped" id="reportTable">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Time</th>
+          <th>RBC Count</th>
+          <th>WBC Count</th>
+          <th>Platelet Count</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td colspan="5">Fetching records...</td></tr>
+      </tbody>
+    </table>
+
+    <button class="btn btn-danger mt-3" onclick="downloadPDF()">⬇️ Download Report</button>
+
+    <p id="doctor">Prescribed by Dr. ...</p>
+  </div>
+
+  <!-- ✅ Scripts -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <script>
+    const SUPABASE_URL = "https://fdiroazxrgqlqmcnxeea.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZkaXJvYXp4cmdxbHFtY254ZWVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3MzI4ODksImV4cCI6MjA3NzMwODg4OX0.Sm_ALvUtLHyOf41eYQaTxFiAjYelts29DjsB91tBjWo";
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const patientNameEl = document.getElementById("pname");
+    const patientPhoneEl = document.getElementById("pphone");
+    const patientAgeEl = document.getElementById("page");
+    const patientSexEl = document.getElementById("psex");
+    const doctorLicenseEl = document.getElementById("dlicense");
+    const reportTableBody = document.querySelector("#reportTable tbody");
+    const doctorEl = document.getElementById("doctor");
+
+    (async function loadReport() {
+      try {
+        // ✅ Load selected patient data
+        const storedPatient = localStorage.getItem("selectedPatient");
+        if (!storedPatient) {
+          alert("⚠️ No patient selected! Please go back and select a patient.");
+          return;
+        }
+
+        const patientData = JSON.parse(storedPatient);
+
+        // Display patient info
+        patientNameEl.textContent = patientData.name || "N/A";
+        patientPhoneEl.textContent = patientData.phone || "N/A";
+        patientAgeEl.textContent = patientData.age || "N/A";
+        patientSexEl.textContent = patientData.sex || "N/A";
+        doctorLicenseEl.textContent = patientData.doctor_license_no || "N/A";
+
+        // ✅ Fetch detections for this patient & doctor
+        const { data: detections, error: detError } = await supabaseClient
+          .from("detections")
+          .select("*")
+          .eq("patient_name", patientData.name)
+          .eq("doctor_license_no", patientData.doctor_license_no)
+          .order("detected_at", { ascending: false });
+
+        if (detError) {
+          console.error("Error fetching detections:", detError);
+          alert("⚠️ Unable to load detection records!");
+          return;
+        }
+
+        reportTableBody.innerHTML = "";
+        if (detections.length === 0) {
+          reportTableBody.innerHTML = `<tr><td colspan="5">No detection records found.</td></tr>`;
+        } else {
+          detections.forEach(det => {
+            const dateTime = new Date(det.detected_at);
+            const date = dateTime.toLocaleDateString("en-IN");
+            const time = dateTime.toLocaleTimeString("en-IN", { hour12: true });
+            reportTableBody.innerHTML += `
+              <tr>
+                <td>${date}</td>
+                <td>${time}</td>
+                <td>${det.rbc_count ?? "N/A"}</td>
+                <td>${det.wbc_count ?? "N/A"}</td>
+                <td>${det.platelet_count ?? "N/A"}</td>
+              </tr>`;
+          });
+        }
+
+        // ✅ Fetch Doctor Info (join via license number)
+        let doctorName = "Unknown Doctor";
+        if (patientData.doctor_license_no) {
+          const { data: doctorData, error: doctorError } = await supabaseClient
+            .from("doctors")
+            .select("first_name, last_name, license_no")
+            .eq("license_no", patientData.doctor_license_no)
+            .single();
+
+          if (doctorData && !doctorError) {
+            doctorName = `${doctorData.first_name} ${doctorData.last_name}`;
+            doctorLicenseEl.textContent = doctorData.license_no;
+          } else {
+            console.error("Doctor fetch error:", doctorError);
+          }
+        }
+
+        // ✅ Update Footer Text
+        doctorEl.textContent = `Prescribed by Dr. ${doctorName}`;
+
+      } catch (err) {
+        console.error("Unexpected Error:", err);
+        alert("❌ Failed to load report.");
+      }
+    })();
+
+    // ✅ Download as PDF
+    function downloadPDF() {
+      const reportElement = document.querySelector(".report-container");
+      const opt = {
+        margin: 0.5,
+        filename: 'Patient_Report.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+      };
+      html2pdf().set(opt).from(reportElement).save();
+    }
+  </script>
+</body>
+</html>

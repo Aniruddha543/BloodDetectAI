@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Add Patient • BloodDetectAI</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Watermark Animation -->
+  <style>
+    @keyframes pulseGlow {
+      0%, 100% {
+        opacity: 0.12;
+        transform: scale(1) rotate(0deg);
+        filter: drop-shadow(0 0 15px rgba(255,255,255,0.1));
+      }
+      50% {
+        opacity: 0.18;
+        transform: scale(1.02) rotate(0deg);
+        filter: drop-shadow(0 0 30px rgba(255,255,255,0.2));
+      }
+    }
+    .watermark-animate {
+      animation: pulseGlow 6s ease-in-out infinite;
+    }
+  </style>
+
+  <!-- Tailwind Config -->
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['"Playfair Display"', 'serif'],
+            sans: ['Poppins', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            brand: '#111827',
+            accent: '#ef4444',
+            ink: '#0b0e14'
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Theme Handling -->
+  <script>
+    (() => {
+      try {
+        const stored = localStorage.getItem('theme');
+        const prefersDark = matchMedia('(prefers-color-scheme: dark)').matches;
+        if (stored === 'dark' || (!stored && prefersDark)) {
+          document.documentElement.classList.add('dark');
+          localStorage.setItem('theme','dark');
+        } else if (stored === 'light') {
+          document.documentElement.classList.remove('dark');
+        } else {
+          localStorage.setItem('theme','light');
+        }
+      } catch {}
+    })();
+  </script>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@300;500;700&display=swap" rel="stylesheet"/>
+</head>
+
+<body class="text-brand dark:text-white font-sans antialiased min-h-screen selection:bg-accent/20 selection:text-accent relative overflow-x-hidden">
+
+  <!-- Background Gradient -->
+  <div class="fixed inset-0 -z-20 bg-gradient-to-br from-[#200000] via-[#400000] to-[#1a0000]"></div>
+  <div class="fixed top-10 left-10 w-72 h-72 bg-red-500/30 rounded-full blur-3xl -z-10"></div>
+  <div class="fixed bottom-10 right-10 w-96 h-96 bg-red-700/30 rounded-full blur-3xl -z-10"></div>
+
+  <!-- Watermark -->
+  <div class="fixed inset-0 flex items-center justify-center pointer-events-none select-none -z-0">
+    <h1 class="watermark-animate text-[6rem] md:text-[9rem] font-display font-bold text-white/15 tracking-widest rotate-[-20deg] drop-shadow-[0_0_25px_rgba(255,255,255,0.15)]">
+      BloodDetectAI
+    </h1>
+  </div>
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-40 bg-white/70 dark:bg-ink/60 backdrop-blur border-b border-black/5 dark:border-white/10">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="doctor_dashboard.html" class="font-display tracking-[0.22em] text-accent">BLOODDETECTAI</a>
+      <div class="flex items-center gap-3">
+        <a href="doctor_dashboard.html" class="px-4 py-2 rounded-full border border-accent text-accent hover:bg-accent hover:text-white transition">Back to Dashboard</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex justify-center items-center py-20">
+    <div class="w-full max-w-3xl bg-white/70 dark:bg-ink/60 backdrop-blur p-8 rounded-2xl shadow-xl border border-red-200 dark:border-white/10">
+      <h1 class="text-3xl font-display text-center text-accent mb-8">🩸 Add Patient Details</h1>
+
+      <form id="patientForm" class="space-y-5">
+        <!-- Doctor Licence (Auto Fetch) -->
+        <div>
+          <label class="block text-sm font-medium mb-1">Doctor Licence No</label>
+          <input type="text" id="doctorLicence" readonly
+            class="w-full border border-red-200 dark:border-white/10 rounded-lg p-2 bg-gray-100 dark:bg-gray-800 text-gray-500 cursor-not-allowed"/>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Full Name</label>
+          <input type="text" id="name" placeholder="ex- Jhon Deo" required class="w-full border border-red-200 dark:border-white/10 rounded-lg p-2 bg-transparent focus:ring-2 focus:ring-accent"/>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Phone Number</label>
+          <input type="tel" id="phone" required pattern="[0-9]{10}" placeholder="10-digit number"
+            class="w-full border border-red-200 dark:border-white/10 rounded-lg p-2 bg-transparent focus:outline-none focus:ring-2 focus:ring-accent" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Age</label>
+          <input type="number" id="age" placeholder="ex-09" required class="w-full border border-red-200 dark:border-white/10 rounded-lg p-2 bg-transparent focus:ring-2 focus:ring-accent"/>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Blood Group</label>
+          <select id="bloodGroup" required class="w-full border border-red-200 dark:border-white/10 rounded-lg p-2 bg-transparent focus:ring-2 focus:ring-accent">
+            <option value="">Select</option>
+            <option>A+</option><option>A-</option>
+            <option>B+</option><option>B-</option>
+            <option>AB+</option><option>AB-</option>
+            <option>O+</option><option>O-</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Sex</label>
+          <select id="sex" required class="w-full border border-red-200 dark:border-white/10 rounded-lg p-2 bg-transparent focus:ring-2 focus:ring-accent">
+            <option value="">Select</option>
+            <option>Male</option>
+            <option>Female</option>
+            <option>Other</option>
+          </select>
+        </div>
+
+        <button id="saveBtn"
+          class="bg-accent text-white px-6 py-2 rounded-lg hover:opacity-90 transition w-full">
+          Save
+        </button>
+      </form>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-red-200 dark:border-white/10 text-center py-6 text-sm text-gray-500 dark:text-gray-400">
+    © 2025 BloodDetectAI. Built by Aniruddha.
+  </footer>
+
+  <!-- Fetch Doctor Licence + Save Script -->
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+    const SUPABASE_URL = "https://fdiroazxrgqlqmcnxeea.supabase.co";
+    const SUPABASE_ANON_KEY =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZkaXJvYXp4cmdxbHFtY254ZWVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3MzI4ODksImV4cCI6MjA3NzMwODg4OX0.Sm_ALvUtLHyOf41eYQaTxFiAjYelts29DjsB91tBjWo";
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const doctorLicenceInput = document.getElementById("doctorLicence");
+    const form = document.getElementById("patientForm");
+
+    // Fetch Doctor Licence
+    async function fetchDoctorLicence() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        alert("Please login first!");
+        window.location.href = "login.html";
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("doctors")
+        .select("license_no, id")
+        .eq("user_id", user.id)
+        .single();
+
+      if (error || !data) {
+        alert("Doctor not found!");
+        return;
+      }
+
+      doctorLicenceInput.value = data.license_no;
+      localStorage.setItem("doctor_license_no", data.license_no);
+      localStorage.setItem("doctor_id", data.id);
+    }
+
+    fetchDoctorLicence();
+
+    // Save Patient + Redirect
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const name = document.getElementById("name").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const age = parseInt(document.getElementById("age").value);
+      const blood_group = document.getElementById("bloodGroup").value;
+      const sex = document.getElementById("sex").value;
+      const doctor_license_no = doctorLicenceInput.value;
+      const doctor_id = localStorage.getItem("doctor_id");
+
+      if (!doctor_id) {
+        alert("Doctor info missing. Please log in again.");
+        return;
+      }
+
+      // Insert patient into Supabase
+      const { error } = await supabase.from("patients").insert([
+        { doctor_id, name, phone, age, blood_group, sex, doctor_license_no },
+      ]);
+
+      if (error) {
+        console.error(error);
+        alert("Error saving patient details!");
+        return;
+      }
+
+      // Store local info and redirect
+      localStorage.setItem("patient_name", name);
+      localStorage.setItem("patient_age", age);
+      localStorage.setItem("patient_sex", sex);
+      localStorage.setItem("doctor_license_no", doctor_license_no);
+
+      window.location.href = "doctor_dashboard.html";
+    });
+  </script>
+</body>
+</html>

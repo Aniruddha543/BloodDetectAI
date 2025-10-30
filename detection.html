@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Detection • BloodDetectAI</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- 🔥 Watermark Animation -->
+  <style>
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.12;
+    transform: scale(1);
+    filter: drop-shadow(0 0 15px rgba(255,255,255,0.1));
+  }
+  50% {
+    opacity: 0.18;
+    transform: scale(1.02);
+    filter: drop-shadow(0 0 30px rgba(255,255,255,0.2));
+  }
+}
+.watermark-animate {
+  animation: pulseGlow 6s ease-in-out infinite;
+}
+  </style>
+
+  <!-- Theme Configuration -->
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['"Playfair Display"', 'serif'],
+            sans: ['Poppins', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            brand: '#111827',
+            accent: '#ef4444',
+            ink: '#0b0e14'
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Auto Theme -->
+  <script>
+    (() => {
+      try {
+        const stored = localStorage.getItem('theme');
+        const prefersDark = matchMedia('(prefers-color-scheme: dark)').matches;
+        if (stored === 'dark' || (!stored && prefersDark)) {
+          document.documentElement.classList.add('dark');
+          localStorage.setItem('theme','dark');
+        } else if (stored === 'light') {
+          document.documentElement.classList.remove('dark');
+        } else {
+          localStorage.setItem('theme','light');
+        }
+      } catch {}
+    })();
+  </script>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@300;500;700&display=swap" rel="stylesheet"/>
+</head>
+
+<body class="text-brand dark:text-white font-sans antialiased min-h-screen selection:bg-accent/20 selection:text-accent relative overflow-x-hidden">
+  <!-- Background Gradient -->
+  <div class="fixed inset-0 -z-20 bg-gradient-to-br from-[#200000] via-[#400000] to-[#1a0000]"></div>
+
+  <!-- Glow Circles -->
+  <div class="fixed top-10 left-10 w-72 h-72 bg-red-500/30 rounded-full blur-3xl -z-10"></div>
+  <div class="fixed bottom-10 right-10 w-96 h-96 bg-red-700/30 rounded-full blur-3xl -z-10"></div>
+
+  <!-- 🩸 Watermark -->
+  <div class="fixed inset-0 flex items-center justify-center pointer-events-none select-none -z-0">
+    <h1 class="watermark-animate text-[6rem] md:text-[9rem] font-display font-bold text-white/15 tracking-widest rotate-[-20deg] drop-shadow-[0_0_25px_rgba(255,255,255,0.15)]">
+      BloodDetectAI
+    </h1>
+  </div>
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-40 bg-white/70 dark:bg-ink/60 backdrop-blur border-b border-black/5 dark:border-white/10">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="doctor_dashboard.html" class="font-display tracking-[0.22em] text-accent">BLOODDETECTAI</a>
+      <div class="flex items-center gap-3">
+        <a href="doctor_dashboard.html" class="px-4 py-2 rounded-full border border-accent text-accent hover:bg-accent hover:text-white transition">Back to Dashboard</a>
+      </div>
+      <div class="flex items-center gap-3">
+        <!-- Theme Toggle -->
+        <button id="theme-toggle" class="w-9 h-9 rounded-full border border-black/10 dark:border-white/20 grid place-items-center text-sm hover:bg-black/5 dark:hover:bg-white/10">🩸</button>
+
+        <!-- 🔒 Logout Button -->
+        <button id="logoutBtn" class="px-4 py-2 rounded-full border border-red-500 text-red-500 hover:bg-red-600 hover:text-white transition font-medium">
+          Logout
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN DETECTION SECTION -->
+  <main class="max-w-6xl mx-auto px-6 py-16 text-center">
+    
+    <!-- 🧬 PATIENT DETAILS SECTION -->
+    <div id="patientDetails" class="mb-12 text-left max-w-3xl mx-auto bg-white/10 dark:bg-ink/50 p-6 rounded-2xl border border-red-300/20 backdrop-blur shadow-xl shadow-red-900/30">
+      <h2 class="font-display text-2xl font-semibold mb-4 text-accent">👩‍⚕️ Patient Details</h2>
+      <div class="grid sm:grid-cols-2 gap-x-8 gap-y-2 text-base">
+        <p><strong>Name:</strong> <span id="patientName" class="text-gray-200"></span></p>
+        <p><strong>Age:</strong> <span id="patientAge" class="text-gray-200"></span></p>
+        <p><strong>Phone:</strong> <span id="patientPhone" class="text-gray-200"></span></p>
+        <p><strong>Doctor License No:</strong> <span id="doctorLicense" class="text-gray-200"></span></p>
+      </div>
+    </div>
+
+    <!-- Detection Title -->
+    <h1 class="font-display text-4xl md:text-5xl font-bold mb-4">🩸 Blood Cell Detection</h1>
+    <p class="text-gray-300 mb-8 max-w-2xl mx-auto">Upload your microscopic image and detect blood cells using AI-powered YOLO model.</p>
+
+    <div class="flex flex-col items-center space-y-6">
+      <input id="imageUpload" type="file" accept="image/*"
+        class="file:bg-accent file:text-white file:font-semibold file:px-4 file:py-2 file:rounded-lg file:border-0 text-sm text-gray-300 bg-ink/60 border border-accent/40 rounded-lg p-3 w-full max-w-md cursor-pointer"/>
+
+      <div class="flex gap-4">
+        <button id="detectBtn" class="px-6 py-3 rounded-full bg-accent text-white hover:opacity-90 transition">Detect</button>
+        <button id="reportBtn" class="px-6 py-3 rounded-full border border-accent text-accent hover:bg-accent hover:text-white transition">Generate Report</button>
+      </div>
+
+      <!-- Image Display Section -->
+      <div class="mt-12 grid sm:grid-cols-2 gap-8 w-full justify-center">
+        <div class="p-4 rounded-2xl border border-red-200 dark:border-white/10 bg-white/10 dark:bg-ink/60 backdrop-blur flex flex-col items-center">
+          <h2 class="font-semibold mb-2">Original Image</h2>
+          <img id="originalImage" alt="Original" class="rounded-xl max-h-[400px] object-contain shadow-lg"/>
+        </div>
+
+        <div class="p-4 rounded-2xl border border-red-200 dark:border-white/10 bg-white/10 dark:bg-ink/60 backdrop-blur flex flex-col items-center">
+          <h2 class="font-semibold mb-2">Detected Image</h2>
+          <img id="detectedImage" alt="Detected" class="rounded-xl max-h-[400px] object-contain shadow-lg"/>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-red-200 dark:border-white/10 text-center py-6 text-sm text-gray-500 dark:text-gray-400">
+    © 2025 BloodDetectAI. Built by Aniruddha.
+  </footer>
+
+  <!-- Script: Load Patient Data -->
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // ✅ Load Patient Data
+    const patientData = JSON.parse(localStorage.getItem('selectedPatient'));
+    if (patientData) {
+      document.getElementById('patientName').textContent = patientData.name || "—";
+      document.getElementById('patientAge').textContent = patientData.age || "—";
+      document.getElementById('patientPhone').textContent = patientData.phone || "—";
+      document.getElementById('doctorLicense').textContent = patientData.doctor_license_no || "—";
+    } else {
+      document.getElementById('patientDetails').innerHTML =
+        "<p class='text-center text-red-400 font-medium'>⚠️ No patient selected. Please return to the dashboard.</p>";
+    }
+
+    // ✅ Logout Functionality
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      localStorage.clear();  // Clear stored session & patient data
+      window.location.href = "index.html";  // Redirect to homepage
+    });
+  });
+  </script>
+
+  <!-- Detection Script -->
+  <script src="js/detection.js"></script>
+</body>
+</html>

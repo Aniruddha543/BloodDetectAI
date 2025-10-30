@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Sign Up • BloodDetectAI</title>
+
+  <!-- TailwindCSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['"Playfair Display"', 'serif'],
+            sans: ['Poppins', 'system-ui', 'sans-serif'],
+          },
+          colors: { brand:'#0f172a', accent:'#e11d48', ink:'#0b0e14' }
+        }
+      }
+    }
+  </script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@300;500;700&display=swap" rel="stylesheet"/>
+
+  <style>
+    /* Animated Watermark */
+    @keyframes pulseGlow {
+      0%, 100% {
+        opacity: 0.1;
+        transform: scale(1) rotate(-20deg);
+        filter: drop-shadow(0 0 10px rgba(255,255,255,0.1));
+      }
+      50% {
+        opacity: 0.18;
+        transform: scale(1.02) rotate(-20deg);
+        filter: drop-shadow(0 0 25px rgba(255,255,255,0.2));
+      }
+    }
+    .watermark-animate {
+      animation: pulseGlow 6s ease-in-out infinite;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen bg-gradient-to-br from-rose-50 to-red-100 flex items-center justify-center p-6 relative overflow-hidden">
+
+  <!-- Watermark -->
+  <div class="fixed inset-0 flex items-center justify-center pointer-events-none select-none -z-10">
+    <h1 class="watermark-animate text-[6rem] md:text-[9rem] font-display font-bold text-white/15 tracking-widest rotate-[-20deg]">
+      BloodDetectAI
+    </h1>
+  </div>
+
+  <!-- Sign Up Card -->
+  <div class="w-full max-w-md backdrop-blur-md bg-white/60 shadow-lg rounded-2xl p-8 border border-white/20">
+    <h1 class="text-3xl font-display text-center text-rose-700 mb-2">Create Your Account</h1>
+    <p class="text-center text-sm text-rose-800/70 mb-6">Join BloodDetectAI and revolutionize your diagnostic workflow.</p>
+
+    <form id="signupForm" class="space-y-5">
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm mb-1 font-medium text-rose-900">First Name</label>
+          <input type="text" id="firstName" required placeholder="John"
+            class="w-full px-3 py-2 rounded-lg border border-gray-300 bg-white/70 focus:ring-2 focus:ring-rose-400 focus:outline-none"/>
+        </div>
+        <div>
+          <label class="block text-sm mb-1 font-medium text-rose-900">Last Name</label>
+          <input type="text" id="lastName" required placeholder="Doe"
+            class="w-full px-3 py-2 rounded-lg border border-gray-300 bg-white/70 focus:ring-2 focus:ring-rose-400 focus:outline-none"/>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm mb-1 font-medium text-rose-900">Email ID</label>
+        <input type="email" id="email" required placeholder="you@example.com"
+          class="w-full px-3 py-2 rounded-lg border border-gray-300 bg-white/70 focus:ring-2 focus:ring-rose-400 focus:outline-none"/>
+      </div>
+
+      <div>
+        <label class="block text-sm mb-1 font-medium text-rose-900">Dr. License No</label>
+        <input type="text" id="license" required placeholder="DR-123456"
+          class="w-full px-3 py-2 rounded-lg border border-gray-300 bg-white/70 focus:ring-2 focus:ring-rose-400 focus:outline-none"/>
+      </div>
+
+      <div>
+        <label class="block text-sm mb-1 font-medium text-rose-900">Password</label>
+        <input type="password" id="password" required placeholder="••••••••"
+          class="w-full px-3 py-2 rounded-lg border border-gray-300 bg-white/70 focus:ring-2 focus:ring-rose-400 focus:outline-none"/>
+      </div>
+
+      <button type="submit"
+        class="w-full bg-rose-600 text-white py-2.5 rounded-lg font-medium hover:bg-rose-700 transition-all focus:ring-2 focus:ring-rose-300">
+        Sign Up
+      </button>
+
+      <p class="text-sm text-center mt-3 text-rose-900">Already have an account?
+        <a href="login.html" class="text-rose-700 hover:underline">Log in</a>
+      </p>
+    </form>
+  </div>
+
+  <script type="module">
+    import { registerDoctor } from './js/supabase.js';
+
+    const form = document.getElementById('signupForm');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const data = {
+        firstName: form.firstName.value.trim(),
+        lastName: form.lastName.value.trim(),
+        email: form.email.value.trim(),
+        license: form.license.value.trim(),
+        password: form.password.value.trim(),
+      };
+
+      // Call Supabase register function
+      const result = await registerDoctor(data);
+
+      if (result.success) {
+        alert('✅ Registration successful! Please verify your email before logging in.');
+        form.reset();
+        window.location.href = 'login.html';
+      } else {
+        alert('❌ Error: ' + result.message);
+      }
+    });
+  </script>
+
+</body>
+</html>

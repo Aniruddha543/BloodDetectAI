@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard • BloodDetectAI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+
+<body class="min-h-screen bg-gradient-to-br from-black via-red-950 to-gray-900 text-white font-sans">
+
+  <!-- HEADER -->
+  <header class="sticky top-0 bg-red-900/50 backdrop-blur-md border-b border-red-700 shadow-lg">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+      <h1 class="text-3xl font-bold text-red-400 tracking-wide">👨‍⚕️ Admin Dashboard</h1>
+      <button onclick="logoutAdmin()" 
+              class="px-4 py-2 rounded-full bg-red-600 hover:bg-red-700 transition font-semibold text-white shadow-lg">
+        Logout
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="max-w-6xl mx-auto px-6 py-10">
+    <h2 class="text-2xl font-semibold text-center text-red-400 mb-8">Doctor & Patient Management</h2>
+
+    <!-- Doctors Container -->
+    <div id="doctorsContainer" class="space-y-6">
+      <p class="text-center text-gray-400">Loading doctor data...</p>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="text-center text-gray-400 text-sm py-6 border-t border-red-800">
+    © 2025 BloodDetectAI • Admin Panel
+  </footer>
+
+  <!-- SCRIPT LOGIC -->
+  <script>
+    // 🔧 SUPABASE CONFIG
+    const SUPABASE_URL = "https://fdiroazxrgqlqmcnxeea.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZkaXJvYXp4cmdxbHFtY254ZWVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3MzI4ODksImV4cCI6MjA3NzMwODg4OX0.Sm_ALvUtLHyOf41eYQaTxFiAjYelts29DjsB91tBjWo";
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    async function loadDoctorsAndPatients() {
+      const { data: doctors, error } = await supabaseClient
+        .from("doctors")
+        .select("id, first_name, last_name, email, license_no");
+
+      const container = document.getElementById("doctorsContainer");
+      container.innerHTML = "";
+
+      if (error || !doctors) {
+        container.innerHTML = `<p class='text-red-400 text-center'>❌ Failed to load doctor data.</p>`;
+        return;
+      }
+
+      if (doctors.length === 0) {
+        container.innerHTML = `<p class='text-gray-400 text-center'>No doctors found.</p>`;
+        return;
+      }
+
+      for (const doctor of doctors) {
+        const { data: patients } = await supabaseClient
+          .from("patients")
+          .select("id, name, phone")
+          .eq("doctor_id", doctor.id);
+
+        const patientList = (patients && patients.length > 0)
+          ? patients.map(
+              (p) => `
+              <li class="flex justify-between items-center bg-gray-800/50 border border-red-800 rounded-md px-4 py-2">
+                <span>${p.name} (${p.phone})</span>
+                <button onclick="deletePatient('${p.id}')" class="text-sm bg-red-600 px-2 py-1 rounded-md hover:bg-red-700">🗑 Delete</button>
+              </li>`
+            ).join("")
+          : "<li class='text-gray-500 italic'>No patients</li>";
+
+        const doctorCard = `
+          <div class="bg-gray-900/50 border border-red-800 rounded-xl p-6 shadow-lg">
+            <h3 class="text-xl font-semibold text-red-400 mb-2">${doctor.first_name} ${doctor.last_name}</h3>
+            <p class="text-gray-300 text-sm mb-2">Email: ${doctor.email}</p>
+            <p class="text-gray-400 text-sm mb-4">License: ${doctor.license_no}</p>
+            
+            <button onclick="deleteDoctor('${doctor.id}')" 
+              class="mb-4 bg-red-700 hover:bg-red-800 px-3 py-1 rounded-md text-white text-sm">
+              🗑 Delete Doctor
+            </button>
+
+            <h4 class="text-lg text-red-300 mb-2">Patients:</h4>
+            <ul>${patientList}</ul>
+          </div>`;
+        
+        container.innerHTML += doctorCard;
+      }
+    }
+
+    // 🧹 Delete a patient
+    async function deletePatient(patientId) {
+      const confirmDelete = confirm("Are you sure you want to delete this patient?");
+      if (!confirmDelete) return;
+
+      const { error } = await supabaseClient
+        .from("patients")
+        .delete()
+        .eq("id", patientId);
+
+      if (error) {
+        alert("❌ Failed to delete patient: " + error.message);
+      } else {
+        alert("✅ Patient deleted successfully!");
+        loadDoctorsAndPatients();
+      }
+    }
+
+    // 🧑‍⚕️ Delete a doctor (auto deletes linked patients due to CASCADE)
+    async function deleteDoctor(doctorId) {
+      const confirmDelete = confirm("Deleting this doctor will remove all linked patients. Continue?");
+      if (!confirmDelete) return;
+
+      const { error } = await supabaseClient
+        .from("doctors")
+        .delete()
+        .eq("id", doctorId);
+
+      if (error) {
+        alert("❌ Failed to delete doctor: " + error.message);
+      } else {
+        alert("✅ Doctor and linked patients deleted successfully!");
+        loadDoctorsAndPatients();
+      }
+    }
+
+    function logoutAdmin() {
+      window.location.href = "index.html";
+    }
+
+    document.addEventListener("DOMContentLoaded", loadDoctorsAndPatients);
+  </script>
+
+</body>
+</html>

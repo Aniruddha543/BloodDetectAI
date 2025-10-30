@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Doctor Dashboard • BloodDetectAI</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+  <!-- Watermark Animation -->
+  <style>
+  @keyframes pulseGlow {
+    0%, 100% {
+      opacity: 0.12;
+      transform: scale(1) rotate(0deg);
+      filter: drop-shadow(0 0 15px rgba(255,255,255,0.1));
+    }
+    50% {
+      opacity: 0.18;
+      transform: scale(1.02) rotate(0deg);
+      filter: drop-shadow(0 0 30px rgba(255,255,255,0.2));
+    }
+  }
+  .watermark-animate {
+    animation: pulseGlow 6s ease-in-out infinite;
+  }
+  </style>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['"Playfair Display"', 'serif'],
+            sans: ['Poppins', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            brand: '#111827',
+            accent: '#ef4444',
+            ink: '#0b0e14'
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Theme Mode Script -->
+  <script>
+    (() => {
+      try {
+        const stored = localStorage.getItem('theme');
+        const prefersDark = matchMedia('(prefers-color-scheme: dark)').matches;
+        if (stored === 'dark' || (!stored && prefersDark)) {
+          document.documentElement.classList.add('dark');
+          localStorage.setItem('theme','dark');
+        } else if (stored === 'light') {
+          document.documentElement.classList.remove('dark');
+        } else {
+          localStorage.setItem('theme','light');
+        }
+      } catch {}
+    })();
+  </script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@300;500;700&display=swap" rel="stylesheet"/>
+  <script type="module" src="js/doctor_dashboard.js" defer></script>
+</head>
+
+<script>
+  // --- SUPABASE SETUP ---
+  const SUPABASE_URL = "https://fdiroazxrgqlqmcnxeea.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZkaXJvYXp4cmdxbHFtY254ZWVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3MzI4ODksImV4cCI6MjA3NzMwODg4OX0.Sm_ALvUtLHyOf41eYQaTxFiAjYelts29DjsB91tBjWo";
+
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const patientsListEl = document.getElementById("patientsList");
+
+  // ✅ Load patients belonging to the logged-in doctor
+  async function loadPatients() {
+    const doctorLicense = localStorage.getItem("logged_doctor_license");
+    const doctorName = localStorage.getItem("logged_doctor_name");
+
+    if (!doctorLicense) {
+      patientsListEl.innerHTML = `<p class="text-red-400">⚠️ Please log in again.</p>`;
+      return;
+    }
+
+    // ✅ Fetch patients whose doctor_license_no matches the doctor's license
+    const { data: patients, error } = await supabaseClient
+      .from("patients")
+      .select("name, age, blood_group, sex, created_at")
+      .eq("doctor_license_no", doctorLicense)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching patients:", error);
+      patientsListEl.innerHTML = `<p class="text-red-400">❌ Failed to load patients.</p>`;
+      return;
+    }
+
+    if (!patients || patients.length === 0) {
+      patientsListEl.innerHTML = `<p class="text-gray-400">No patients found for Dr. ${doctorName}.</p>`;
+      return;
+    }
+
+    // ✅ Display patient list
+    patientsListEl.innerHTML = patients
+      .map(
+        (p, i) => `
+        <div class="flex justify-between items-center bg-red-900/20 border border-red-500/30 rounded-lg px-5 py-3">
+          <div class="text-left">
+            <span class="text-white font-medium">${i + 1}. ${p.name}</span><br/>
+            <span class="text-sm text-gray-300">${p.age} yrs • ${p.sex} • ${p.blood_group}</span>
+          </div>
+          <span class="text-xs text-gray-400">${new Date(p.created_at).toLocaleString()}</span>
+        </div>
+      `
+      )
+      .join("");
+  }
+    
+  // ✅ Logout Function
+  function logoutDoctor() {
+    localStorage.removeItem("logged_doctor_id");
+    localStorage.removeItem("logged_doctor_name");
+    localStorage.removeItem("logged_doctor_email");
+    localStorage.removeItem("logged_doctor_license");
+    window.location.href = "index.html";
+  }
+
+  document.addEventListener("DOMContentLoaded", loadPatients);
+</script>
+
+
+<body class="text-brand dark:text-white font-sans antialiased min-h-screen selection:bg-accent/20 selection:text-accent relative overflow-x-hidden">
+  <!-- Background -->
+  <div class="fixed inset-0 -z-20 bg-gradient-to-br from-[#200000] via-[#400000] to-[#1a0000]"></div>
+  <div class="fixed top-10 left-10 w-72 h-72 bg-red-500/30 rounded-full blur-3xl -z-10"></div>
+  <div class="fixed bottom-10 right-10 w-96 h-96 bg-red-700/30 rounded-full blur-3xl -z-10"></div>
+
+  <!-- Watermark -->
+  <div class="fixed inset-0 flex items-center justify-center pointer-events-none select-none -z-0">
+    <h1 class="watermark-animate text-[6rem] md:text-[9rem] font-display font-bold text-white/15 tracking-widest rotate-[-20deg] drop-shadow-[0_0_25px_rgba(255,255,255,0.15)]">
+      BloodDetectAI
+    </h1>
+  </div>
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-40 bg-white/70 dark:bg-ink/60 backdrop-blur border-b border-black/5 dark:border-white/10">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="doctor_dashboard.html" class="font-display tracking-[0.22em] text-accent">BLOODDETECTAI</a>
+
+      <div class="flex items-center gap-3">
+        <button id="theme-toggle" 
+          class="w-9 h-9 rounded-full border border-black/10 dark:border-white/20 grid place-items-center text-sm hover:bg-black/5 dark:hover:bg-white/10">
+          🩸
+        </button>
+
+        <!-- ✅ LOGOUT BUTTON -->
+        <button onclick="logoutDoctor()"
+          class="px-4 py-2 rounded-full border border-red-500 text-red-500 hover:bg-red-600 hover:text-white transition font-medium">
+          Logout
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- DASHBOARD CONTENT -->
+  <main class="max-w-6xl mx-auto px-6 py-12">
+  <h1 class="text-3xl md:text-4xl font-display font-bold text-center text-accent mb-10">
+    Doctor Dashboard
+  </h1>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+  <!-- Doctor Info -->
+  <div class="lg:col-span-2 bg-white/70 dark:bg-ink/60 border border-red-200 dark:border-white/10 rounded-2xl p-8 backdrop-blur shadow-2xl">
+    <h2 class="text-2xl font-semibold text-red-700 dark:text-red-400 mb-4">Doctor Profile</h2>
+    <div id="doctorDetails" class="space-y-3 text-gray-700 dark:text-gray-300 text-base">
+      <p><b>Name:</b> <span id="doctorName">Loading...</span></p>
+      <p><b>Email:</b> <span id="doctorEmail">Loading...</span></p>
+      <p><b>License No:</b> <span id="doctorLicense">Loading...</span></p>
+    </div>
+
+    <div id="previewContainer" class="mt-6 hidden text-center">
+      <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Preview:</p>
+      <img id="previewImage" class="mx-auto w-36 h-36 rounded-full shadow-lg object-cover" />
+    </div>
+  </div>
+
+  <!-- About Blood Cells -->
+  <div class="col-span-1 row-span-2 bg-white/70 dark:bg-ink/60 border border-red-200 dark:border-white/10 rounded-2xl p-6 text-center backdrop-blur shadow-xl">
+    <h2 class="text-xl font-semibold text-red-700 dark:text-red-400 mb-3">About Blood Cells</h2>
+    <p class="text-sm text-gray-700 dark:text-gray-300 text-justify">
+      Blood cells play a crucial role in diagnosing diseases. By analyzing the morphology 
+      of red and white blood cells, doctors can detect infections, anemia, and various disorders. 
+      BloodDetectAI automates this detection with AI precision for faster and more reliable results.
+    </p>
+  </div>
+
+  <!-- ✅ Patient Management (unchanged button design) -->
+  <div class="lg:col-span-1 bg-white/70 dark:bg-ink/60 border border-red-200 dark:border-white/10 rounded-2xl p-8 text-center backdrop-blur shadow-xl">
+    <h2 class="text-2xl font-semibold text-red-700 dark:text-red-400 mb-4">Patient Registration</h2>
+    <div class="flex justify-center">
+      <button onclick="window.location.href='patientDetails.html'"
+        class="bg-gradient-to-r from-red-500 to-red-700 text-white font-semibold px-8 py-3 rounded-xl shadow-md hover:scale-105 transition-transform duration-200">
+        ➕ Add Patient
+      </button>
+    </div>
+    <p class="text-xs text-gray-600 dark:text-gray-400 mt-4">
+      Register new patients efficiently.
+    </p>
+  </div>
+
+  <!-- 🆕 Patient Registration (below About Blood Cells)
+  <div class="col-span-1 bg-white/70 dark:bg-ink/60 border border-red-200 dark:border-white/10 rounded-2xl p-6 text-center backdrop-blur shadow-xl">
+    <h2 class="text-xl font-semibold text-red-700 dark:text-red-400 mb-4">Patient Management</h2>
+    <button onclick="window.location.href='managepatient.html'"
+      class="bg-gradient-to-r from-red-500 to-red-700 text-white font-semibold px-6 py-3 rounded-xl shadow-md hover:scale-105 transition-transform duration-200">
+      🧾 Register Patient
+    </button>
+    <p class="text-xs text-gray-600 dark:text-gray-400 mt-4">
+      Manage patient details and manage their medical records efficiently.
+    </p>
+  </div> -->
+
+  <!-- Patients History -->
+  <div class="col-span-3 bg-white/70 dark:bg-ink/60 border border-red-200 dark:border-white/10 rounded-2xl p-6 mt-8 backdrop-blur shadow-xl">
+    <h2 class="text-2xl font-semibold text-red-700 dark:text-red-400 mb-4 text-center">Patients History</h2>
+
+    <div id="patientsList" class="space-y-2 text-gray-800 dark:text-gray-300 text-center text-base">
+      <p>Loading patients...</p>
+    </div>
+  </div>
+
+</div>
+
+</main>
+
+
+  <!-- FOOTER -->
+  <footer class="border-t border-red-200 dark:border-white/10 text-center py-6 text-sm text-gray-500 dark:text-gray-400">
+    © 2025 BloodDetectAI. Built by Aniruddha.
+  </footer>
+
+  <script>
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+      document.documentElement.classList.toggle('dark');
+      const theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+      localStorage.setItem('theme', theme);
+    });
+  </script>
+</body>
+</html>

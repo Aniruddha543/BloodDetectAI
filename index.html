@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>BloodDetectAI • Smart Blood Cell Detection</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- 🔥 Watermark Animation CSS -->
+  <style>
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.12;
+    transform: scale(1) rotate(0deg);
+    filter: drop-shadow(0 0 15px rgba(255,255,255,0.1));
+  }
+  50% {
+    opacity: 0.18;
+    transform: scale(1.02) rotate(0deg);
+    filter: drop-shadow(0 0 30px rgba(255,255,255,0.2));
+  }
+}
+.watermark-animate {
+  animation: pulseGlow 6s ease-in-out infinite;
+}
+</style>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['"Playfair Display"', 'serif'],
+            sans: ['Poppins', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            brand: '#111827',
+            accent: '#ef4444',
+            ink: '#0b0e14'
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Theme -->
+  <script>
+    (() => {
+      try {
+        const stored = localStorage.getItem('theme');
+        const prefersDark = matchMedia('(prefers-color-scheme: dark)').matches;
+        if (stored === 'dark' || (!stored && prefersDark)) {
+          document.documentElement.classList.add('dark');
+          localStorage.setItem('theme','dark');
+        } else if (stored === 'light') {
+          document.documentElement.classList.remove('dark');
+        } else {
+          localStorage.setItem('theme','light');
+        }
+      } catch {}
+    })();
+  </script>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@300;500;700&display=swap" rel="stylesheet"/>
+</head>
+
+<body class="text-brand dark:text-white font-sans antialiased min-h-screen selection:bg-accent/20 selection:text-accent relative overflow-x-hidden">
+  <!-- Background Gradient -->
+  <div class="fixed inset-0 -z-20 bg-gradient-to-br from-[#200000] via-[#400000] to-[#1a0000]"></div>
+
+  <!-- Subtle Glow Circles -->
+  <div class="fixed top-10 left-10 w-72 h-72 bg-red-500/30 rounded-full blur-3xl -z-10"></div>
+  <div class="fixed bottom-10 right-10 w-96 h-96 bg-red-700/30 rounded-full blur-3xl -z-10"></div>
+
+  <!-- 🩸 Animated Watermark -->
+  <!-- Watermark -->
+    <div class="fixed inset-0 flex items-center justify-center pointer-events-none select-none -z-0">
+    <h1 class="watermark-animate text-[6rem] md:text-[9rem] font-display font-bold text-white/15 tracking-widest rotate-[-20deg] drop-shadow-[0_0_25px_rgba(255,255,255,0.15)]">
+        BloodDetectAI
+    </h1>
+    </div>
+
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-40 bg-white/70 dark:bg-ink/60 backdrop-blur border-b border-black/5 dark:border-white/10">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="#" class="font-display tracking-[0.22em] text-accent">BLOODDETECTAI</a>
+
+      <nav class="hidden md:block" aria-label="Primary">
+        <ul class="flex items-center gap-6 text-sm">
+          <li><a href="#features" class="hover:text-accent">Features</a></li>
+          <li><a href="#about" class="hover:text-accent">About</a></li>
+          <li><a href="#team" class="hover:text-accent">Contact</a></li>
+        </ul>
+      </nav>
+
+      <div class="flex items-center gap-3">
+        <a href="admin.html" class="px-4 py-2 rounded-full border border-accent text-accent hover:bg-accent hover:text-white transition">Admin Log In</a>
+        <a href="login.html" class="px-4 py-2 rounded-full border border-accent text-accent hover:bg-accent hover:text-white transition">Log In</a>
+        <a href="register.html" class="px-4 py-2 rounded-full bg-accent text-white hover:opacity-90 transition">Sign Up</a>
+        <button id="theme-toggle" class="w-9 h-9 rounded-full border border-black/10 dark:border-white/20 grid place-items-center text-sm hover:bg-black/5 dark:hover:bg-white/10">🩸</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="max-w-6xl mx-auto px-6 py-20 text-center">
+    <p class="uppercase tracking-[0.3em] text-xs md:text-sm mb-3 text-accent">Welcome to</p>
+    <h1 class="font-display text-4xl md:text-6xl font-bold mb-4">BloodDetectAI</h1>
+    <p class="text-base md:text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+      An AI-powered blood cell detection system designed for smarter, faster, and more accurate medical diagnostics. Upload microscopic images, detect abnormalities, and generate reports effortlessly.
+    </p>
+    <div class="mt-8">
+      <a href="login.html" class="px-6 py-3 rounded-full bg-accent text-white hover:opacity-90 transition">Get Started</a>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features" class="max-w-6xl mx-auto px-6 py-16">
+    <h3 class="font-display text-2xl md:text-3xl mb-8 text-center">Key Features</h3>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="p-6 rounded-2xl border border-red-200 dark:border-white/10 bg-white/70 dark:bg-ink/60 backdrop-blur">
+        <h4 class="font-semibold mb-2">AI Blood Cell Detection</h4>
+        <p class="text-sm text-gray-600 dark:text-gray-300">Automated blood cell classification using YOLO-based deep learning model.</p>
+      </div>
+      <div class="p-6 rounded-2xl border border-red-200 dark:border-white/10 bg-white/70 dark:bg-ink/60 backdrop-blur">
+        <h4 class="font-semibold mb-2">Medical Record Storage</h4>
+        <p class="text-sm text-gray-600 dark:text-gray-300">Securely store and manage patient reports and detection results.</p>
+      </div>
+      <div class="p-6 rounded-2xl border border-red-200 dark:border-white/10 bg-white/70 dark:bg-ink/60 backdrop-blur">
+        <h4 class="font-semibold mb-2">Smart PDF Reports</h4>
+        <p class="text-sm text-gray-600 dark:text-gray-300">Export detailed diagnostic reports in professional medical PDF format.</p>
+      </div>
+      <div class="p-6 rounded-2xl border border-red-200 dark:border-white/10 bg-white/70 dark:bg-ink/60 backdrop-blur">
+        <h4 class="font-semibold mb-2">Doctor Portal</h4>
+        <p class="text-sm text-gray-600 dark:text-gray-300">Dedicated dashboard for doctors to review, verify, and annotate results.</p>
+      </div>
+      <div class="p-6 rounded-2xl border border-red-200 dark:border-white/10 bg-white/70 dark:bg-ink/60 backdrop-blur">
+        <h4 class="font-semibold mb-2">Privacy & Security</h4>
+        <p class="text-sm text-gray-600 dark:text-gray-300">HIPAA-compliant data encryption for patient and diagnostic safety.</p>
+      </div>
+      <div class="p-6 rounded-2xl border border-red-200 dark:border-white/10 bg-white/70 dark:bg-ink/60 backdrop-blur">
+        <h4 class="font-semibold mb-2">Realtime Detection Logs</h4>
+        <p class="text-sm text-gray-600 dark:text-gray-300">Track detections, patient entries, and report generation in real time.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about" class="max-w-6xl mx-auto px-6 py-16">
+    <div class="rounded-2xl border border-red-200 dark:border-white/10 bg-white/70 dark:bg-ink/60 backdrop-blur p-6 md:p-8">
+      <h3 class="font-display text-2xl md:text-3xl mb-3 text-center">About BloodDetectAI</h3>
+      <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
+        BloodDetectAI is developed by <b>Aniruddha</b>, a student of the Institute of Engineering & Management (IEM). It blends deep learning with medical imaging to revolutionize blood cell analysis. Using YOLO-based detection and advanced computer vision, the platform efficiently identifies blood cell anomalies. Designed for doctors, laboratories, and researchers, BloodDetectAI automates image detection, reduces diagnostic time, and ensures secure medical data management.
+      </p>
+    </div>
+  </section>
+
+  <!-- TEAM -->
+  <section id="team" class="max-w-6xl mx-auto px-6 py-16 text-center">
+  <h3 class="font-display text-2xl md:text-3xl mb-8">Developed By</h3>
+
+  <!-- Center the profile -->
+  <div class="flex justify-center">
+    <div class="w-full max-w-[320px] sb-glass rounded-2xl p-6 border border-black/5 dark:border-white/10 sb-reveal flex flex-col items-center text-center">
+      <img src="assets/aniruddha.jpeg" alt="Aniruddha Bera"
+        class="w-28 h-28 rounded-full object-cover shadow-lg mb-4 hover:scale-105 transition" />
+      <div class="font-semibold text-lg">Aniruddha Bera</div>
+
+      <div class="flex gap-4 mt-3">
+        <a href="https://www.linkedin.com/in/aniruddha-bera-31300428b/" target="_blank" rel="noopener" aria-label="Aniruddha Bera on LinkedIn" class="hover:scale-110 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="w-6 h-6 text-blue-600 fill-current">
+            <path d="M100.28 448H7.4V148.9h92.88zM53.84 108.1C24.1 108.1 0 83.5 0 53.9 0 24.2 24.6 0 54.7 0s53.8 24.2 53.8 53.9c0 29.6-24.1 54.2-54.66 54.2zM447.9 448h-92.4V302.4c0-34.7-.7-79.3-48.3-79.3-48.4 0-55.8 37.8-55.8 76.8V448h-92.5V148.9H251v40.8h1.3c13.9-26.3 47.8-54 98.4-54 105.3 0 124.7 69.3 124.7 159.3z"/>
+          </svg>
+        </a>
+        <a href="https://github.com/Aniruddha543" target="_blank" rel="noopener" aria-label="Aniruddha Bera on GitHub" class="hover:scale-110 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512" class="w-6 h-6 text-gray-800 dark:text-white fill-current">
+            <path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zM244 8C106 8 0 114.6 0 253.2 0 366.4 73.3 463 175 497c12.8 2.4 17.5-5.6 17.5-12.4 0-6.1-.2-26.3-.3-47.7-71.2 15.7-86.2-30.7-86.2-30.7-11.7-29.8-28.5-37.7-28.5-37.7-23.3-16 1.8-15.7 1.8-15.7 25.7 1.8 39.2 26.4 39.2 26.4 22.9 39.4 60.1 28 74.8 21.4 2.3-16.8 8.9-28.1 16.2-34.6-56.8-6.6-116.5-28.9-116.5-128.6 0-28.4 10.1-51.6 26.7-69.8-2.6-6.6-11.6-33.2 2.5-69.1 0 0 21.8-7 71.6 26.7 20.8-5.9 43-8.8 65.1-8.9 22.1.1 44.3 3 65.1 8.9 49.7-33.7 71.5-26.7 71.5-26.7 14.2 35.9 5.2 62.5 2.6 69.1 16.6 18.2 26.6 41.4 26.6 69.8 0 99.9-59.8 121.8-116.8 128.3 9.1 7.9 17.3 23.4 17.3 47.2 0 34.1-.3 61.6-.3 70 0 6.9 4.6 14.9 17.6 12.4C422.7 463 496 366.3 496 253.2 496 114.6 388.9 8 244 8z"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+  <!-- FOOTER -->
+  <footer class="border-t border-red-200 dark:border-white/10 text-center py-6 text-sm text-gray-500 dark:text-gray-400">
+    © 2025 BloodDetectAI. Built by Aniruddha.
+  </footer>
+</body>
+</html>
